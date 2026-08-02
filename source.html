@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optometry Interactive Reviewer</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pink: {
+              50: '#fdf2f8',
+              100: '#fce7f3',
+              200: '#fbcfe8',
+              300: '#f9a8d4',
+              400: '#f472b6',
+              500: '#ec4899',
+              600: '#db2777',
+              700: '#be185d',
+              800: '#9d174d',
+              900: '#831843',
+            },
+            rose: {
+              50: '#fff1f2',
+              100: '#ffe4e6',
+              200: '#fecdd3',
+              500: '#f43f5e',
+              600: '#e11d48',
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fbcfe8 100%);
+      min-height: 100vh;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(251, 207, 232, 0.6);
+      box-shadow: 0 10px 30px -5px rgba(236, 72, 153, 0.15);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #fce7f3;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #f472b6;
+      border-radius: 8px;
+    }
+    @keyframes pulse-pink {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .pulse-anim {
+      animation: pulse-pink 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="font-sans text-pink-950 flex flex-col justify-between p-3 sm:p-6">
+
+  <!-- Header -->
+  <header class="max-w-4xl w-full mx-auto mb-6">
+    <div class="glass-card rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 flex items-center justify-center text-white shadow-lg shadow-pink-300">
+          <i class="fa-solid fa-eye text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-pink-700 to-rose-600 bg-clip-text text-transparent">
+            Optometry Master Reviewer
+          </h1>
+          <p class="text-xs sm:text-sm text-pink-600 font-medium">100 Source-Based Questions (Interactive Mode Selection)</p>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
+        <button id="soundBtn" onclick="toggleSound()" class="px-3 py-2 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-700 transition flex items-center gap-2 text-sm font-semibold">
+          <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+        </button>
+        <button onclick="resetQuiz()" class="px-4 py-2 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-semibold text-sm shadow-md shadow-pink-200 transition flex items-center gap-2">
+          <i class="fa-solid fa-rotate-right"></i> Restart
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="max-w-4xl w-full mx-auto flex-1 flex flex-col justify-center">
+    
+    <!-- Start View -->
+    <div id="startCard" class="glass-card rounded-3xl p-6 sm:p-10 text-center">
+      <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-4xl pulse-anim">
+        <i class="fa-solid fa-sliders"></i>
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-pink-900 mb-2">Custom Quiz Setup</h2>
+      <p class="text-pink-700 text-sm sm:text-base max-w-xl mx-auto mb-6 leading-relaxed">
+        Choose your preferred <strong>Question Type</strong> and <strong>Topic Category</strong> to customize your practice session.
+      </p>
+
+      <!-- Selection Controls Container -->
+      <div class="max-w-xl mx-auto space-y-6 text-left mb-8">
+        
+        <!-- 1. Question Type Selection -->
+        <div class="bg-white/80 p-5 rounded-2xl border border-pink-200 shadow-sm">
+          <label class="block text-xs font-bold uppercase tracking-wider text-pink-800 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-pink-500"></i> Select Question Type
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <button type="button" id="type-btn-all" onclick="setQuestionType('all')" 
+              class="type-select-btn px-4 py-3 rounded-xl border-2 text-sm font-bold transition flex items-center justify-center gap-2 border-pink-500 bg-pink-500 text-white shadow-sm">
+              <i class="fa-solid fa-layer-group"></i> All Types
+            </button>
+            <button type="button" id="type-btn-identification" onclick="setQuestionType('identification')" 
+              class="type-select-btn px-4 py-3 rounded-xl border-2 text-sm font-bold transition flex items-center justify-center gap-2 border-pink-200 bg-white text-pink-800 hover:border-pink-300">
+              <i class="fa-solid fa-fingerprint"></i> Identification
+            </button>
+            <button type="button" id="type-btn-enumeration" onclick="setQuestionType('enumeration')" 
+              class="type-select-btn px-4 py-3 rounded-xl border-2 text-sm font-bold transition flex items-center justify-center gap-2 border-pink-200 bg-white text-pink-800 hover:border-pink-300">
+              <i class="fa-solid fa-list-ol"></i> Enumeration
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Topic Category Filter -->
+        <div class="bg-white/80 p-5 rounded-2xl border border-pink-200 shadow-sm">
+          <label for="categorySelect" class="block text-xs font-bold uppercase tracking-wider text-pink-800 mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-book-open text-pink-500"></i> Select Topic / Category
+          </label>
+          <select id="categorySelect" onchange="updateFilteredCount()" 
+            class="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none text-pink-900 font-bold bg-white text-sm">
+            <option value="all">All Topics (Full Reviewer)</option>
+            <option value="Eye Pain">Eye Pain</option>
+            <option value="Eye Strain">Eye Strain</option>
+            <option value="Dry Eye">Dry Eye</option>
+            <option value="Tearing">Tearing (Epiphora)</option>
+            <option value="Itchiness">Itchiness (Pruritus)</option>
+            <option value="Foreign Body Sensation">Foreign Body Sensation</option>
+            <option value="Photophobia">Photophobia</option>
+            <option value="Glare">Glare</option>
+            <option value="Photophobia & Glare">Photophobia & Glare Diagnostic/Management</option>
+            <option value="Floaters & Flashes">Floaters and Flashes</option>
+            <option value="Dizziness & Vertigo">Dizziness or Vertigo</option>
+            <option value="Sudden Vision Loss">Sudden Loss of Vision</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Start Action Button -->
+      <div class="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
+        <button onclick="startQuiz()" id="startBtn" class="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-lg shadow-lg shadow-pink-300 transition transform active:scale-95 flex items-center justify-center gap-2">
+          <span>Start Reviewer</span>
+          <span id="startBtnCount" class="bg-white/20 px-3 py-0.5 rounded-full text-sm font-extrabold">(100 Questions)</span>
+          <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quiz View (Hidden initially) -->
+    <div id="quizCard" class="glass-card rounded-3xl p-5 sm:p-8 hidden relative overflow-hidden">
+      
+      <!-- Top Bar: Progress & Metrics -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center text-xs sm:text-sm font-bold text-pink-700 mb-2">
+          <span id="questionCategory" class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full uppercase tracking-wider text-xs">Category</span>
+          <div class="flex items-center gap-4">
+            <span><i class="fa-solid fa-fire text-amber-500"></i> Streak: <span id="streakCount">0</span></span>
+            <span><i class="fa-solid fa-bullseye text-pink-600"></i> Score: <span id="scoreText">0 / 0</span></span>
+          </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="w-full bg-pink-100 rounded-full h-3 overflow-hidden p-0.5 border border-pink-200">
+          <div id="progressBar" class="bg-gradient-to-r from-pink-400 to-rose-500 h-full rounded-full transition-all duration-300 w-0"></div>
+        </div>
+        <div class="flex justify-between text-xs font-semibold text-pink-500 mt-1">
+          <span>Question <span id="currentQNum">1</span> of <span id="totalQNum">100</span></span>
+          <span id="percentProgress">0%</span>
+        </div>
+      </div>
+
+      <!-- Question Box -->
+      <div class="bg-white/90 rounded-2xl p-5 sm:p-7 border border-pink-100 mb-6 shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <span id="qTypeBadge" class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-rose-100 text-rose-700 uppercase">IDENTIFICATION</span>
+        </div>
+        <h3 id="questionText" class="text-lg sm:text-xl font-bold text-pink-950 leading-snug">
+          Question content loading...
+        </h3>
+        <p id="enumerationHint" class="text-xs text-pink-500 mt-2 hidden italic">
+          <i class="fa-solid fa-circle-info"></i> Tip: Separate multiple answers with commas (order doesn't matter).
+        </p>
+      </div>
+
+      <!-- User Input Section -->
+      <form id="answerForm" onsubmit="handleAnswerSubmit(event)" class="space-y-4">
+        <div>
+          <label for="userAnswer" class="block text-xs font-bold uppercase tracking-wider text-pink-700 mb-1">
+            Type Your Answer Here:
+          </label>
+          <div class="relative">
+            <input type="text" id="userAnswer" autocomplete="off" placeholder="Type answer here..." 
+              class="w-full px-4 py-3.5 sm:py-4 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 outline-none text-pink-900 font-semibold bg-white transition pr-12 text-base">
+            <button type="button" onclick="clearInput()" class="absolute right-3 top-1/2 -translate-y-1/2 text-pink-300 hover:text-pink-500 p-1">
+              <i class="fa-solid fa-circle-xmark text-lg"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Feedback Msg -->
+        <div id="feedbackBox" class="hidden rounded-xl p-4 text-sm font-semibold transition"></div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <button type="button" onclick="revealAnswer()" id="hintBtn" class="px-4 py-3 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-800 font-bold text-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-lightbulb text-amber-500"></i> Show Answer
+          </button>
+
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="skipQuestion()" class="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+              Skip
+            </button>
+            <button type="submit" id="submitBtn" class="px-6 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-sm shadow-md shadow-pink-200 transition flex items-center gap-2">
+              Submit Answer <i class="fa-solid fa-paper-plane"></i>
+            </button>
+            <button type="button" id="nextBtn" onclick="nextQuestion()" class="hidden px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-bold text-sm shadow-md shadow-pink-300 transition flex items-center gap-2">
+              Next Question <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Results View (Hidden initially) -->
+    <div id="resultCard" class="glass-card rounded-3xl p-6 sm:p-10 text-center hidden">
+      <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-5xl">
+        <i id="resultIcon" class="fa-solid fa-trophy"></i>
+      </div>
+      <h2 id="resultTitle" class="text-3xl font-extrabold text-pink-900 mb-2">Review Completed!</h2>
+      <p id="resultSubtitle" class="text-pink-600 font-medium mb-6">Here is how you performed on your selected set:</p>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto mb-8">
+        <div class="bg-white/80 p-4 rounded-2xl border border-pink-200">
+          <div class="text-xs text-pink-500 font-bold uppercase">Final Score</div>
+          <div id="finalScore" class="text-2xl font-black text-pink-700 mt-1">0/0</div>
+        </div>
+        <div class="bg-white/80 p-4 rounded-2xl border border-pink-200">
+          <div class="text-xs text-pink-500 font-bold uppercase">Accuracy</div>
+          <div id="finalAccuracy" class="text-2xl font-black text-pink-700 mt-1">0%</div>
+        </div>
+        <div class="bg-white/80 p-4 rounded-2xl border border-pink-200">
+          <div class="text-xs text-pink-500 font-bold uppercase">Max Streak</div>
+          <div id="maxStreak" class="text-2xl font-black text-amber-500 mt-1">0</div>
+        </div>
+        <div class="bg-white/80 p-4 rounded-2xl border border-pink-200">
+          <div class="text-xs text-pink-500 font-bold uppercase">Skipped</div>
+          <div id="skippedCount" class="text-2xl font-black text-slate-600 mt-1">0</div>
+        </div>
+      </div>
+
+      <!-- Review Incorrect Items -->
+      <div id="missedSection" class="text-left mb-8 hidden">
+        <h4 class="font-bold text-pink-900 mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-list-check text-pink-600"></i> Review Answers You Missed or Skipped:
+        </h4>
+        <div id="missedList" class="max-h-60 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
+        <button onclick="resetQuiz()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold shadow-md shadow-pink-200 transition">
+          <i class="fa-solid fa-arrow-rotate-left mr-2"></i> Configure New Quiz
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="max-w-4xl w-full mx-auto mt-6 text-center text-xs font-semibold text-pink-600/80">
+    Source-based Optometry Interactive Reviewer &bull; Pure Pink Theme
+  </footer>
+
+  <!-- Quiz Script -->
+  <script>
+    // 100 STRICT SOURCE-BASED QUESTIONS
+    const questionsDatabase = [
+      // EYE PAIN & EYE STRAIN
+      { id: 1, cat: "Eye Pain", type: "identification", q: "What is the definition of Eye Pain (Ocular Pain)?", ans: "any sensation of discomfort, aching, soreness, burning, or sharp pain in or around the eye" },
+      { id: 2, cat: "Eye Pain", type: "enumeration", q: "Enumerate the 9 Signs (Observed by the Examiner) for Eye Pain.", ans: ["Redness of the eye", "Excessive tearing (epiphora)", "Swollen eyelids", "Conjunctival injection", "Corneal abrasion or ulcer", "Corneal edema", "Abnormal pupil reactions", "Reduced visual acuity", "Photophobia (light sensitivity)"] },
+      { id: 3, cat: "Eye Pain", type: "enumeration", q: "Enumerate the 8 Symptoms (Reported by the Patient) for Eye Pain.", ans: ["Sharp, aching, or throbbing eye pain", "Burning or stinging sensation", "Foreign body sensation", "Pain with eye movement", "Blurred vision", "Redness", "Sensitivity to light", "Headache"] },
+      { id: 4, cat: "Eye Pain", type: "enumeration", q: "Enumerate the 10 Common Causes of Eye Pain.", ans: ["Corneal abrasion", "Corneal ulcer (keratitis)", "Dry eye disease", "Foreign body in the eye", "Conjunctivitis", "Blepharitis", "Anterior uveitis (iritis)", "Acute angle-closure glaucoma", "Optic neuritis", "Eye trauma"] },
+      { id: 5, cat: "Eye Pain", type: "enumeration", q: "Enumerate the 6 Indications for Evaluation where an immediate eye examination is recommended for Eye Pain.", ans: ["Decreased vision", "Severe redness", "Trauma", "Chemical exposure", "Contact lens wear", "Persistent or worsening pain"] },
+      { id: 6, cat: "Eye Pain", type: "enumeration", q: "What are the two specific Contraindication warnings stated when evaluating eye pain?", ans: ["Do not apply pressure to an eye suspected of having a penetrating injury", "Avoid removing deeply embedded foreign bodies"] },
+      { id: 7, cat: "Eye Pain", type: "enumeration", q: "Enumerate the 4 Advantages of Early Diagnosis for Eye Pain.", ans: ["Prevents permanent vision loss", "Relieves pain", "Detects serious eye diseases early", "Reduces the risk of complications"] },
+      { id: 8, cat: "Eye Pain", type: "enumeration", q: "Enumerate the 5 Disadvantages (If Left Untreated) for Eye Pain.", ans: ["Corneal scarring", "Infection", "Permanent vision loss", "Blindness in severe cases", "Chronic ocular pain"] },
+      { id: 9, cat: "Eye Pain", type: "enumeration", q: "Enumerate the 6 Management steps for Eye Pain (including urgent referral conditions).", ans: ["Treat the underlying cause", "Artificial tears for dry eye", "Topical antibiotics for bacterial infections (when indicated)", "Anti-inflammatory medications as prescribed", "Remove superficial foreign bodies safely", "Urgent referral for acute glaucoma, corneal ulcers, penetrating injuries, or sudden vision loss"] },
+      { id: 10, cat: "Eye Strain", type: "identification", q: "What is the definition of Eye strain (Asthenopia)?", ans: "a group of symptoms caused by prolonged or intense use of the eyes, especially during reading, computer use, or other close work" },
+      { id: 11, cat: "Eye Strain", type: "enumeration", q: "Enumerate the 5 Signs (Observed by the Examiner) for Eye Strain.", ans: ["Reduced accommodative or vergence function", "Poor binocular vision", "Uncorrected refractive error", "Dry eye signs", "Normal external eye examination in many cases"] },
+      { id: 12, cat: "Eye Strain", type: "enumeration", q: "Enumerate the 9 Symptoms (Reported by the Patient) for Eye Strain.", ans: ["Tired or sore eyes", "Eye discomfort", "Blurred vision", "Headache", "Double vision (occasionally)", "Difficulty focusing", "Burning or watery eyes", "Neck or shoulder pain after prolonged visual tasks", "Difficulty concentrating"] },
+      { id: 13, cat: "Eye Strain", type: "enumeration", q: "Enumerate the 8 Common Causes of Eye Strain.", ans: ["Prolonged computer or digital device use (Digital Eye Strain)", "Uncorrected refractive errors", "Presbyopia", "Poor lighting", "Binocular vision disorders", "Dry eye disease", "Extended reading or close work", "Poor ergonomics"] },
+      { id: 14, cat: "Eye Strain", type: "enumeration", q: "Enumerate the 4 Indications for Evaluation for Eye Strain.", ans: ["Symptoms occur frequently", "Symptoms interfere with work or study", "Headaches or blurred vision are recurrent", "Symptoms persist despite rest"] },
+      { id: 15, cat: "Eye Strain", type: "identification", q: "According to the sources, what are the contraindications to evaluating eye strain?", ans: "There are no contraindications to evaluating eye strain" },
+      { id: 16, cat: "Eye Strain", type: "enumeration", q: "Enumerate the 4 Advantages of Early Diagnosis for Eye Strain.", ans: ["Improves visual comfort", "Enhances reading and work performance", "Detects refractive or binocular vision problems", "Prevents worsening symptoms"] },
+      { id: 17, cat: "Eye Strain", type: "enumeration", q: "Enumerate the 5 Disadvantages (If Left Untreated) for Eye Strain.", ans: ["Persistent discomfort", "Reduced productivity", "Frequent headaches", "Difficulty performing visual tasks", "Poor quality of life"] },
+      { id: 18, cat: "Eye Strain", type: "enumeration", q: "Enumerate the 6 Management rules/steps for Eye Strain.", ans: ["Correct refractive errors with appropriate spectacles or contact lenses", "Follow the 20-20-20 rule (every 20 minutes, look at something 20 feet away for 20 seconds)", "Take regular breaks during reading or computer work", "Improve lighting and workstation ergonomics", "Use lubricating eye drops if dry eye is present", "Manage binocular vision disorders with appropriate therapy when indicated"] },
+      { id: 19, cat: "Eye Strain", type: "identification", q: "In the 20-20-20 rule for eye strain, how many feet away should you look and for how many seconds?", ans: "20 feet away for 20 seconds" },
+
+      // DRY EYE
+      { id: 20, cat: "Dry Eye", type: "identification", q: "What is Dry Eye (Dry Eye Disease or Keratoconjunctivitis Sicca)?", ans: "a common condition in which the eyes do not produce enough tears or the tears evaporate too quickly, resulting in inadequate lubrication of the ocular surface" },
+      { id: 21, cat: "Dry Eye", type: "enumeration", q: "Enumerate the 8 Signs (Observed by the Examiner) for Dry Eye.", ans: ["Redness of the conjunctiva", "Reduced tear meniscus height", "Decreased tear break-up time (TBUT)", "Corneal or conjunctival staining with fluorescein or lissamine green", "Mucus strands or debris in the tear film", "Inflamed eyelid margins (blepharitis)", "Meibomian gland dysfunction", "Excessive reflex tearing (watery eyes)"] },
+      { id: 22, cat: "Dry Eye", type: "enumeration", q: "Enumerate the 7 Symptoms (Reported by the Patient) for Dry Eye.", ans: ["Dryness of the eyes", "Burning or stinging sensation", "Itching", "Redness", "Blurred or fluctuating vision", "Eye fatigue, especially during reading or computer use", "Sensitivity to light (photophobia)", "Excessive tearing", "Difficulty wearing contact lenses"] },
+      { id: 23, cat: "Dry Eye", type: "enumeration", q: "Enumerate the 10 Common Causes of Dry Eye.", ans: ["Aging", "Meibomian gland dysfunction (MGD)", "Prolonged digital screen use", "Environmental factors (wind, smoke, air conditioning)", "Contact lens wear", "Autoimmune diseases (e.g., Sjögren syndrome, rheumatoid arthritis)", "Certain medications (antihistamines, antidepressants, diuretics)", "Hormonal changes", "Vitamin A deficiency", "Previous eye surgery"] },
+      { id: 24, cat: "Dry Eye", type: "enumeration", q: "Enumerate the 5 Indications for Evaluation for Dry Eye.", ans: ["Persistent dryness or irritation", "Blurred or fluctuating vision", "Recurrent redness", "Contact lens discomfort", "Symptoms that interfere with daily activities"] },
+      { id: 25, cat: "Dry Eye", type: "enumeration", q: "Enumerate the 3 conditions under which diagnostic procedures for Dry Eye may be postponed.", ans: ["Active severe eye infection", "Recent ocular trauma or surgery (unless medically indicated)", "Acute chemical injury"] },
+      { id: 26, cat: "Dry Eye", type: "enumeration", q: "Enumerate the 6 Diagnostic Tests for Dry Eye.", ans: ["Tear Break-Up Time (TBUT)", "Schirmer Test", "Fluorescein staining", "Lissamine green staining", "Meibomian gland evaluation", "Tear osmolarity testing (when available)"] },
+      { id: 27, cat: "Dry Eye", type: "enumeration", q: "Enumerate the 9 Management steps for Dry Eye.", ans: ["Artificial tears (lubricating eye drops)", "Lubricating ointments or gels", "Warm compresses and eyelid hygiene", "Management of meibomian gland dysfunction", "Environmental modifications (avoid smoke, use a humidifier)", "Frequent blinking during screen use", "Adequate hydration", "Prescription anti-inflammatory eye drops for moderate to severe cases", "Punctal plugs in selected patients"] },
+      { id: 28, cat: "Dry Eye", type: "enumeration", q: "Enumerate the 4 Advantages of Early Diagnosis and Treatment for Dry Eye.", ans: ["Relieves discomfort", "Improves vision and visual quality", "Prevents corneal damage", "Enhances contact lens comfort"] },
+      { id: 29, cat: "Dry Eye", type: "enumeration", q: "Enumerate the 6 Disadvantages (If Left Untreated) for Dry Eye.", ans: ["Chronic eye irritation", "Persistent blurred vision", "Corneal ulcers or infections", "Corneal scarring", "Increased risk of ocular surface damage", "Reduced quality of life"] },
+
+      // TEARING (EPIPHORA)
+      { id: 30, cat: "Tearing", type: "identification", q: "What is Tearing, also known as epiphora?", ans: "the excessive production or overflow of tears onto the face" },
+      { id: 31, cat: "Tearing", type: "enumeration", q: "Enumerate the 8 Signs (Observed by the Examiner) for Tearing (Epiphora).", ans: ["Excessive tears overflowing onto the cheeks", "Wet or watery eyes", "Increased tear meniscus height", "Redness of the conjunctiva", "Swollen eyelids (if associated with infection or inflammation)", "Mucous or purulent discharge (if infection is present)", "Signs of lacrimal drainage obstruction", "Skin irritation around the eyelids due to constant tearing"] },
+      { id: 32, cat: "Tearing", type: "enumeration", q: "Enumerate the 8 Symptoms (Reported by the Patient) for Tearing (Epiphora).", ans: ["Constant watery eyes", "Tears running down the cheeks", "Blurred vision caused by excessive tears", "Foreign body sensation", "Eye irritation or discomfort", "Burning or stinging sensation", "Sensitivity to light (photophobia)", "Frequent need to wipe the eyes"] },
+      { id: 33, cat: "Tearing", type: "enumeration", q: "Enumerate the 10 Common Causes of Tearing.", ans: ["Dry eye disease (causing reflex tearing)", "Allergic conjunctivitis", "Viral or bacterial conjunctivitis", "Corneal abrasion or foreign body", "Blocked tear duct (nasolacrimal duct obstruction)", "Blepharitis", "Eyelid malposition (ectropion or entropion)", "Trichiasis (misdirected eyelashes)", "Environmental irritants (wind, smoke, dust)", "Contact lens irritation"] },
+      { id: 34, cat: "Tearing", type: "enumeration", q: "Enumerate the 6 Indications for Evaluation for Tearing.", ans: ["Tearing is persistent or recurrent", "It is associated with pain or redness", "Vision becomes blurred", "There is mucous or pus discharge", "There is swelling near the inner corner of the eye", "Tearing occurs after eye trauma"] },
+      { id: 35, cat: "Tearing", type: "enumeration", q: "Enumerate the 7 Diagnostic Tests for Tearing.", ans: ["Visual acuity assessment", "Slit-lamp examination", "Fluorescein staining", "Tear Break-Up Time (TBUT)", "Schirmer test", "Fluorescein dye disappearance test", "Lacrimal drainage irrigation or probing (when indicated)"] },
+      { id: 36, cat: "Tearing", type: "enumeration", q: "Enumerate the 6 Management options for Tearing.", ans: ["Artificial tears for dry eye-related reflex tearing", "Treat the underlying cause (e.g., allergies, infection, blepharitis)", "Warm compresses and eyelid hygiene", "Removal of any ocular foreign body", "Antibiotics if a bacterial infection is present", "Surgical treatment (e.g., dacryocystorhinostomy) for tear duct obstruction when necessary"] },
+      { id: 37, cat: "Tearing", type: "identification", q: "In Relevance in Optometry for Tearing, a thorough examination is essential to distinguish between what two factors?", ans: "excessive tear production and impaired tear drainage" },
+
+      // ITCHINESS (PRURITUS)
+      { id: 38, cat: "Itchiness", type: "identification", q: "What is Itchiness, also called pruritus?", ans: "an uncomfortable sensation on the skin or around the eyes that creates the urge to scratch" },
+      { id: 39, cat: "Itchiness", type: "enumeration", q: "Enumerate the 7 Signs (Observed by the Examiner) for Itchiness.", ans: ["Redness of the eyes or eyelids", "Swollen eyelids", "Watery eyes (tearing)", "Swollen conjunctiva (chemosis)", "Frequent rubbing or scratching of the eyes", "Dry, flaky, or irritated skin around the eyelids", "Mild mucus discharge (especially in allergic conjunctivitis)"] },
+      { id: 40, cat: "Itchiness", type: "enumeration", q: "Enumerate the 7 Symptoms (Reported by the Patient) for Itchiness.", ans: ["Persistent itching or irritation of the eyes", "Burning or stinging sensation", "Feeling of something in the eye (foreign body sensation)", "Excessive tearing", "Sensitivity to light (photophobia)", "Blurred vision due to excessive tearing or mucus", "Eye discomfort that worsens after exposure to allergens such as dust, pollen, pet dander, or smoke"] },
+      { id: 41, cat: "Itchiness", type: "enumeration", q: "Enumerate the 7 Common Causes of Itchiness.", ans: ["Allergic conjunctivitis", "Dry eye disease", "Blepharitis (eyelid inflammation)", "Contact lens irritation", "Environmental irritants (dust, smoke, chemicals)", "Eye infections (viral or bacterial)", "Atopic dermatitis or eczema affecting the eyelids"] },
+      { id: 42, cat: "Itchiness", type: "enumeration", q: "Enumerate the 6 conditions under 'When to Seek Medical Attention' for Itchiness.", ans: ["Severe eye pain", "Sudden decrease in vision", "Significant swelling", "Thick yellow or green discharge", "Eye injury or chemical exposure", "Symptoms that persist despite treatment or worsen over time"] },
+      { id: 43, cat: "Itchiness", type: "identification", q: "In optometry, itchiness is a common symptom of which specific condition according to the note text?", ans: "allergic conjunctivitis" },
+
+      // FOREIGN BODY SENSATION
+      { id: 44, cat: "Foreign Body Sensation", type: "identification", q: "What is Foreign body sensation (FBS)?", ans: "the feeling that something is in the eye, even when no actual foreign object is present" },
+      { id: 45, cat: "Foreign Body Sensation", type: "enumeration", q: "Enumerate the 8 Signs (Observed by the Examiner) for Foreign Body Sensation.", ans: ["Excessive tearing (epiphora)", "Redness of the eye (conjunctival injection)", "Frequent blinking or squinting", "Swollen eyelids", "Corneal abrasion or epithelial defect (seen with fluorescein staining)", "Visible foreign body on the cornea, conjunctiva, or under the eyelid", "Mucous discharge (in some cases)", "Blepharospasm (involuntary eyelid closure)"] },
+      { id: 46, cat: "Foreign Body Sensation", type: "enumeration", q: "Enumerate the 9 Symptoms (Reported by the Patient) for Foreign Body Sensation.", ans: ["Feeling that something is stuck in the eye", "Eye irritation or discomfort", "Sharp or scratchy pain", "Excessive tearing", "Redness", "Sensitivity to light (photophobia)", "Blurred vision (if the cornea is affected)", "Pain that worsens with blinking"] },
+      { id: 47, cat: "Foreign Body Sensation", type: "enumeration", q: "Enumerate the 9 Common Causes of Foreign Body Sensation.", ans: ["Dust, sand, metal, wood, or other foreign bodies", "Corneal abrasion", "Dry eye disease", "Contact lens irritation or misuse", "Blepharitis", "Allergic or infectious conjunctivitis", "Trichiasis (misdirected eyelashes)", "Corneal ulcer", "Exposure to smoke, chemicals, or wind"] },
+      { id: 48, cat: "Foreign Body Sensation", type: "enumeration", q: "Enumerate the 6 Indications for Evaluation for Foreign Body Sensation.", ans: ["The sensation persists after flushing the eye", "There is significant pain or redness", "Vision becomes blurred", "A foreign body is visible", "Symptoms occur after eye trauma or contact lens use", "Symptoms do not improve within 24 hours"] },
+      { id: 49, cat: "Foreign Body Sensation", type: "enumeration", q: "Enumerate the 3 warning statements under Contraindications for Foreign Body Sensation.", ans: ["Do not attempt to remove a deeply embedded object", "Do not remove an object penetrating the eyeball", "Avoid rubbing the eye, as this may worsen the injury"] },
+      { id: 50, cat: "Foreign Body Sensation", type: "enumeration", q: "Enumerate the 5 Diagnostic Tests for Foreign Body Sensation.", ans: ["Visual acuity assessment", "Slit-lamp biomicroscopy", "Fluorescein staining", "Eyelid eversion to inspect for hidden foreign bodies", "Seidel test (if globe perforation is suspected)"] },
+      { id: 51, cat: "Foreign Body Sensation", type: "enumeration", q: "Enumerate the 6 Management points for Foreign Body Sensation.", ans: ["Irrigate the eye with sterile saline or clean water (for superficial foreign bodies)", "Remove superficial foreign bodies using appropriate sterile techniques by an eye care professional", "Prescribe lubricating eye drops if needed", "Topical antibiotic eye drops or ointment if there is a corneal abrasion or risk of infection", "Avoid contact lens wear until the eye has healed", "Refer urgently to an ophthalmologist if there is a penetrating eye injury, a deeply embedded foreign body, or significant vision loss"] },
+      { id: 52, cat: "Foreign Body Sensation", type: "enumeration", q: "Enumerate the 5 Advantages of Early Diagnosis and Treatment for Foreign Body Sensation.", ans: ["Relieves pain and discomfort", "Prevents infection", "Reduces the risk of corneal scarring", "Preserves vision", "Promotes faster healing"] },
+      { id: 53, cat: "Foreign Body Sensation", type: "enumeration", q: "Enumerate the 5 Disadvantages (If Left Untreated) for Foreign Body Sensation.", ans: ["Corneal infection or ulcer", "Persistent pain and irritation", "Corneal scarring", "Reduced vision", "Permanent ocular damage in severe cases"] },
+
+      // PHOTOPHOBIA AND GLARE
+      { id: 54, cat: "Photophobia", type: "identification", q: "What is Photophobia?", ans: "an abnormal sensitivity or intolerance to light that causes discomfort or pain when the eyes are exposed to bright light" },
+      { id: 55, cat: "Photophobia", type: "enumeration", q: "Enumerate the 7 Signs (Observed by the Examiner) for Photophobia.", ans: ["Squinting or excessive blinking", "Frequent eye closure in bright light", "Excessive tearing (epiphora)", "Conjunctival redness", "Corneal abnormalities (e.g., abrasion, ulcer)", "Inflamed anterior chamber (uveitis)", "Reduced visual comfort during examination"] },
+      { id: 56, cat: "Photophobia", type: "enumeration", q: "Enumerate the 7 Symptoms (Reported by the Patient) for Photophobia.", ans: ["Eye discomfort or pain in bright light", "Sensitivity to sunlight or indoor lighting", "Excessive tearing", "Blurred vision", "Headache", "Eye redness", "Difficulty keeping the eyes open in bright environments"] },
+      { id: 57, cat: "Photophobia", type: "enumeration", q: "Enumerate the 9 Common Causes of Photophobia.", ans: ["Dry eye disease", "Corneal abrasion or ulcer", "Anterior uveitis (iritis)", "Conjunctivitis", "Keratitis", "Migraine", "Optic neuritis", "Albinism", "Dilated pupils (after eye examination or medication)"] },
+      { id: 58, cat: "Photophobia", type: "enumeration", q: "Enumerate the 5 Indications for Evaluation for Photophobia.", ans: ["Persistent or severe light sensitivity", "Associated eye pain or redness", "Blurred vision", "Symptoms following eye injury", "Recurrent episodes of photophobia"] },
+      { id: 59, cat: "Photophobia", type: "enumeration", q: "What is the single contraindication guideline given for Photophobia?", ans: "Avoid exposing patients with severe photophobia to unnecessarily bright lights during examination" },
+      { id: 60, cat: "Photophobia", type: "enumeration", q: "Enumerate the 4 Advantages of Early Diagnosis for Photophobia.", ans: ["Identifies serious ocular diseases early", "Prevents complications", "Relieves discomfort through appropriate treatment", "Preserves vision"] },
+      { id: 61, cat: "Photophobia", type: "enumeration", q: "Enumerate the 4 Disadvantages (If Left Untreated) for Photophobia.", ans: ["Persistent pain and discomfort", "Worsening ocular disease", "Reduced quality of life", "Possible vision loss in severe underlying conditions"] },
+      { id: 62, cat: "Glare", type: "identification", q: "What is Glare?", ans: "difficulty seeing clearly because of excessive or scattered light entering the eye" },
+      { id: 63, cat: "Glare", type: "enumeration", q: "Enumerate the 6 Signs (Observed by the Examiner) for Glare.", ans: ["Reduced visual acuity under bright light", "Decreased contrast sensitivity", "Lens opacities (cataracts)", "Corneal scarring or edema", "Large pupils", "Irregular corneal surface"] },
+      { id: 64, cat: "Glare", type: "enumeration", q: "Enumerate the 7 Symptoms (Reported by the Patient) for Glare.", ans: ["Difficulty seeing in bright sunlight", "Halos around lights", "Difficulty driving at night", "Reduced contrast sensitivity", "Eye strain", "Blurred vision in bright conditions", "Discomfort from bright headlights or reflective surfaces"] },
+      { id: 65, cat: "Glare", type: "enumeration", q: "Enumerate the 8 Common Causes of Glare.", ans: ["Cataracts", "Uncorrected refractive errors", "Corneal disorders", "Dry eye disease", "Previous refractive surgery", "Large pupils", "Contact lens problems", "Aging changes in the eye"] },
+      { id: 66, cat: "Glare", type: "enumeration", q: "Enumerate the 4 Indications for Evaluation for Glare.", ans: ["Difficulty with night driving", "Persistent glare affecting daily activities", "Glare associated with blurred vision", "Suspected cataracts or corneal disease"] },
+      { id: 67, cat: "Glare", type: "identification", q: "What are the contraindications to evaluating glare?", ans: "There are no contraindications to evaluating glare" },
+      { id: 68, cat: "Glare", type: "enumeration", q: "Enumerate the 4 Advantages of Early Diagnosis for Glare.", ans: ["Detects cataracts and corneal disorders early", "Improves visual performance", "Enhances patient safety, especially while driving", "Guides appropriate treatment"] },
+      { id: 69, cat: "Glare", type: "enumeration", q: "Enumerate the 4 Disadvantages (If Left Untreated) for Glare.", ans: ["Reduced quality of vision", "Difficulty performing daily tasks", "Increased risk of driving accidents", "Progressive vision impairment if due to underlying eye disease"] },
+      { id: 70, cat: "Photophobia & Glare", type: "enumeration", q: "Enumerate the 8 Diagnostic Tests for Photophobia and Glare.", ans: ["Visual acuity assessment", "Slit-lamp biomicroscopy", "Refraction", "Contrast sensitivity testing", "Glare testing (Brightness Acuity Test)", "Corneal staining with fluorescein", "Tear film evaluation (e.g., Tear Break-Up Time)", "Dilated fundus examination (when indicated)"] },
+      { id: 71, cat: "Photophobia & Glare", type: "enumeration", q: "Enumerate the 6 Management points for Photophobia and Glare.", ans: ["Treat the underlying cause (e.g., dry eye, uveitis, cataract)", "Lubricating eye drops for dry eye", "Appropriate refractive correction", "Sunglasses or photochromic lenses for light sensitivity", "Anti-inflammatory or antibiotic medications when indicated", "Cataract surgery if glare is caused by significant lens opacity"] },
+
+      // FLOATERS AND FLASHES
+      { id: 72, cat: "Floaters & Flashes", type: "identification", q: "What is the definition of Floaters?", ans: "small spots, cobwebs, threads, or specks that drift across the field of vision" },
+      { id: 73, cat: "Floaters & Flashes", type: "identification", q: "What is the definition of Flashes (Photopsia)?", ans: "brief flashes or streaks of light seen without an external light source" },
+      { id: 74, cat: "Floaters & Flashes", type: "enumeration", q: "Enumerate the 6 Signs (Observed by the Examiner) for Floaters and Flashes.", ans: ["Vitreous opacities (floaters) on dilated fundus examination", "Posterior vitreous detachment (PVD)", "Retinal tear or retinal detachment", "Vitreous hemorrhage", "Pigment cells in the vitreous (Shafer's sign)", "Retinal breaks or holes"] },
+      { id: 75, cat: "Floaters & Flashes", type: "enumeration", q: "Enumerate the 7 Symptoms (Reported by the Patient) for Floaters and Flashes.", ans: ["Seeing black or gray spots, dots, threads, cobwebs, or squiggly lines", "Floaters that move with eye movement", "Bright flashes or lightning-like streaks of light", "Flashes occurring mainly in dim lighting or with eye movement", "Blurred vision", "A curtain, veil, or shadow blocking part of the vision (suggestive of retinal detachment)", "Sudden increase in the number of floaters"] },
+      { id: 76, cat: "Floaters & Flashes", type: "enumeration", q: "Enumerate the 10 Common Causes of Floaters and Flashes.", ans: ["Age-related vitreous degeneration", "Posterior vitreous detachment (PVD)", "Retinal tear", "Retinal detachment", "Vitreous hemorrhage", "Eye trauma", "High myopia (nearsightedness)", "Diabetic retinopathy", "Uveitis (intraocular inflammation)", "Ocular migraine (can cause flashes without retinal disease)"] },
+      { id: 77, cat: "Floaters & Flashes", type: "enumeration", q: "Enumerate the 6 Indications for Evaluation for Floaters and Flashes.", ans: ["Floaters or flashes appear suddenly", "There is a rapid increase in floaters", "Flashes persist or become frequent", "A curtain or shadow appears over the vision", "Vision decreases", "Symptoms occur after eye injury"] },
+      { id: 78, cat: "Floaters & Flashes", type: "enumeration", q: "Enumerate the 5 Advantages of Early Diagnosis for Floaters and Flashes.", ans: ["Early detection of retinal tears", "Prevention of retinal detachment", "Preservation of vision", "Prompt treatment of underlying disease", "Reassurance if symptoms are due to a benign posterior vitreous detachment"] },
+      { id: 79, cat: "Floaters & Flashes", type: "enumeration", q: "Enumerate the 4 Disadvantages (If Left Untreated) for Floaters and Flashes.", ans: ["Retinal detachment", "Permanent vision loss", "Blindness in severe cases", "Progression of underlying retinal disease"] },
+      { id: 80, cat: "Floaters & Flashes", type: "enumeration", q: "Enumerate the 6 Diagnostic Tests for Floaters and Flashes.", ans: ["Visual acuity assessment", "Dilated fundus examination", "Slit-lamp examination with fundus lens", "Binocular indirect ophthalmoscopy", "Optical Coherence Tomography (OCT), when indicated", "B-scan ocular ultrasonography if the retina cannot be visualized"] },
+      { id: 81, cat: "Floaters & Flashes", type: "enumeration", q: "Enumerate the Management treatments for PVD, Retinal tear, Retinal detachment, Vitreous hemorrhage, and Uveitis.", ans: ["Benign posterior vitreous detachment (PVD): Observation with follow-up examinations", "Retinal tear: Laser photocoagulation or cryotherapy", "Retinal detachment: Urgent surgical repair", "Vitreous hemorrhage: Treat the underlying cause", "Uveitis: Anti-inflammatory treatment as prescribed by an eye care specialist"] },
+
+      // DIZZINESS OR VERTIGO
+      { id: 82, cat: "Dizziness & Vertigo", type: "identification", q: "What is the definition of Dizziness?", ans: "a general term describing a sensation of being lightheaded, unsteady, faint, or off-balance" },
+      { id: 83, cat: "Dizziness & Vertigo", type: "identification", q: "What is the definition of Vertigo?", ans: "a specific type of dizziness in which a person feels that they or their surroundings are spinning or moving, even when they are still" },
+      { id: 84, cat: "Dizziness & Vertigo", type: "enumeration", q: "Enumerate the 8 Signs (Observed by the Examiner) for Dizziness or Vertigo.", ans: ["Unsteady gait or difficulty walking", "Loss of balance or coordination", "Nystagmus (involuntary eye movements)", "Pale appearance", "Sweating", "Difficulty standing without support", "Nausea or vomiting", "Abnormal head positioning due to discomfort"] },
+      { id: 85, cat: "Dizziness & Vertigo", type: "enumeration", q: "Enumerate the 10 Symptoms (Reported by the Patient) for Dizziness or Vertigo.", ans: ["Feeling that the room is spinning (vertigo)", "Lightheadedness or feeling faint", "Loss of balance", "Floating or rocking sensation", "Nausea and vomiting", "Blurred vision", "Difficulty focusing the eyes", "Headache (in some cases)", "Ringing in the ears (tinnitus)", "Hearing loss (if associated with an inner ear disorder)"] },
+      { id: 86, cat: "Dizziness & Vertigo", type: "enumeration", q: "Enumerate the 8 Common Causes of Dizziness or Vertigo.", ans: ["Benign Paroxysmal Positional Vertigo (BPPV)", "Vestibular neuritis or labyrinthitis", "Ménière's disease", "Migraine (vestibular migraine)", "Low blood pressure (hypotension)", "Dehydration", "Low blood sugar (hypoglycemia)", "Certain medications"] },
+      { id: 87, cat: "Dizziness & Vertigo", type: "enumeration", q: "Enumerate the 8 Red Flag Symptoms (Seek Immediate Medical Attention) for Dizziness or Vertigo.", ans: ["Sudden weakness or numbness", "Difficulty speaking or understanding speech", "Double vision or sudden vision loss", "Severe headache", "Chest pain", "Loss of consciousness", "Persistent vomiting", "Difficulty walking or severe imbalance"] },
+      { id: 88, cat: "Dizziness & Vertigo", type: "enumeration", q: "In Optometry, dizziness or vertigo may be associated with which 6 visual/ocular conditions?", ans: ["Binocular vision disorders", "Uncorrected refractive errors", "Prism adaptation problems", "Vestibulo-ocular reflex abnormalities", "Nystagmus", "Ocular motor dysfunction"] },
+
+      // SUDDEN LOSS OF VISION
+      { id: 89, cat: "Sudden Vision Loss", type: "identification", q: "What is the definition of Sudden loss of vision?", ans: "the rapid partial or complete loss of vision in one or both eyes that develops within seconds, minutes, or hours" },
+      { id: 90, cat: "Sudden Vision Loss", type: "enumeration", q: "Enumerate the 10 Signs (Observed by the Examiner) for Sudden Loss of Vision.", ans: ["Decreased visual acuity", "Relative afferent pupillary defect (RAPD) in unilateral optic nerve or severe retinal disease", "Visual field defects", "Abnormal pupillary reactions", "Retinal whitening or a cherry-red spot (central retinal artery occlusion)", "Retinal hemorrhages or venous dilation (central retinal vein occlusion)", "Retinal detachment", "Vitreous hemorrhage", "Optic disc swelling or pallor", "Corneal edema or opacity (depending on the cause)"] },
+      { id: 91, cat: "Sudden Vision Loss", type: "enumeration", q: "Enumerate the 7 Symptoms (Reported by the Patient) for Sudden Loss of Vision.", ans: ["Sudden blurred or complete loss of vision", "Loss of vision in one or both eyes", "A curtain or shadow covering part of the vision", "Flashes and floaters", "Eye pain (in some conditions, such as acute angle-closure glaucoma or optic neuritis)", "Headache (may occur with giant cell arteritis or migraine)", "Distorted or missing areas of vision"] },
+      { id: 92, cat: "Sudden Vision Loss", type: "enumeration", q: "Enumerate the 11 Common Causes of Sudden Loss of Vision.", ans: ["Retinal detachment", "Central retinal artery occlusion (CRAO)", "Central retinal vein occlusion (CRVO)", "Vitreous hemorrhage", "Optic neuritis", "Acute angle-closure glaucoma", "Ischemic optic neuropathy", "Retinal tear", "Ocular trauma", "Stroke affecting the visual pathways", "Migraine with visual aura (temporary)"] },
+      { id: 93, cat: "Sudden Vision Loss", type: "enumeration", q: "Enumerate the 6 Indications for Immediate Evaluation (Emergency assessment) for Sudden Loss of Vision.", ans: ["Any sudden decrease or loss of vision", "Vision loss associated with flashes or floaters", "Eye pain with decreased vision", "Vision loss after eye injury", "Sudden visual field loss", "Double vision with neurological symptoms"] },
+      { id: 94, cat: "Sudden Vision Loss", type: "identification", q: "Are there any contraindications to evaluating sudden vision loss according to the source?", ans: "There are no contraindications to evaluating sudden vision loss" },
+      { id: 95, cat: "Sudden Vision Loss", type: "enumeration", q: "Enumerate the 4 Advantages of Early Diagnosis for Sudden Loss of Vision.", ans: ["Improves the chance of restoring vision", "Prevents permanent blindness", "Allows timely treatment of retinal and optic nerve diseases", "Identifies life-threatening neurological or vascular conditions"] },
+      { id: 96, cat: "Sudden Vision Loss", type: "enumeration", q: "Enumerate the 5 Disadvantages (If Left Untreated) for Sudden Loss of Vision.", ans: ["Permanent vision loss", "Blindness", "Retinal detachment progression", "Irreversible optic nerve damage", "Increased risk of systemic complications (e.g., stroke)"] },
+      { id: 97, cat: "Sudden Vision Loss", type: "enumeration", q: "Enumerate the 10 Diagnostic Tests for Sudden Loss of Vision.", ans: ["Visual acuity assessment", "Pupillary examination (including RAPD)", "Visual field testing", "Slit-lamp biomicroscopy", "Tonometry (to measure intraocular pressure)", "Dilated fundus examination", "Optical Coherence Tomography (OCT)", "Fundus photography", "Fluorescein angiography (when indicated)", "B-scan ultrasonography if the fundus cannot be visualized"] },
+      { id: 98, cat: "Sudden Vision Loss", type: "identification", q: "What is the specific management listed for Retinal detachment in Sudden Loss of Vision?", ans: "Surgical repair" },
+      { id: 99, cat: "Sudden Vision Loss", type: "identification", q: "What is the specific management listed for Acute angle-closure glaucoma in Sudden Loss of Vision?", ans: "Immediate reduction of intraocular pressure" },
+      { id: 100, cat: "Sudden Vision Loss", type: "identification", q: "In Relevance in Optometry, prompt diagnosis of sudden loss of vision may identify what life-threatening systemic conditions?", ans: "stroke or giant cell arteritis" }
+    ];
+
+    // Quiz Filter & State Variables
+    let selectedType = 'all'; // 'all', 'identification', 'enumeration'
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let streak = 0;
+    let maxStreak = 0;
+    let skipped = 0;
+    let missedQuestions = [];
+    let isSoundOn = true;
+    let hasSubmittedCurrent = false;
+
+    // Audio SFX using Web Audio API
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playBeep(freq, type, duration) {
+      if (!isSoundOn) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playCorrectSound() {
+      playBeep(523.25, 'triangle', 0.1); // C5
+      setTimeout(() => playBeep(659.25, 'triangle', 0.2), 80); // E5
+    }
+
+    function playIncorrectSound() {
+      playBeep(220, 'sawtooth', 0.2); // A3
+    }
+
+    function toggleSound() {
+      isSoundOn = !isSoundOn;
+      const icon = document.getElementById('soundIcon');
+      if (isSoundOn) {
+        icon.className = "fa-solid fa-volume-high";
+      } else {
+        icon.className = "fa-solid fa-volume-xmark";
+      }
+    }
+
+    // Set Question Type Filter
+    function setQuestionType(type) {
+      selectedType = type;
+      const buttons = document.querySelectorAll('.type-select-btn');
+      
+      buttons.forEach(btn => {
+        btn.className = "type-select-btn px-4 py-3 rounded-xl border-2 text-sm font-bold transition flex items-center justify-center gap-2 border-pink-200 bg-white text-pink-800 hover:border-pink-300";
+      });
+
+      const activeBtn = document.getElementById(`type-btn-${type}`);
+      if (activeBtn) {
+        activeBtn.className = "type-select-btn px-4 py-3 rounded-xl border-2 text-sm font-bold transition flex items-center justify-center gap-2 border-pink-500 bg-pink-500 text-white shadow-sm";
+      }
+
+      updateFilteredCount();
+    }
+
+    // Calculate how many questions match current filters
+    function getFilteredQuestions() {
+      const selectedCategory = document.getElementById('categorySelect').value;
+      return questionsDatabase.filter(q => {
+        const matchesType = (selectedType === 'all') || (q.type === selectedType);
+        const matchesCat = (selectedCategory === 'all') || (q.cat === selectedCategory);
+        return matchesType && matchesCat;
+      });
+    }
+
+    function updateFilteredCount() {
+      const filtered = getFilteredQuestions();
+      const countLabel = document.getElementById('startBtnCount');
+      const startBtn = document.getElementById('startBtn');
+
+      countLabel.innerText = `(${filtered.length} Question${filtered.length === 1 ? '' : 's'})`;
+
+      if (filtered.length === 0) {
+        startBtn.disabled = true;
+        startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        startBtn.disabled = false;
+        startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    // Initialize Quiz with current filters
+    function startQuiz() {
+      currentQuestions = getFilteredQuestions();
+
+      if (currentQuestions.length === 0) return;
+
+      currentIndex = 0;
+      score = 0;
+      streak = 0;
+      maxStreak = 0;
+      skipped = 0;
+      missedQuestions = [];
+
+      document.getElementById('startCard').classList.add('hidden');
+      document.getElementById('resultCard').classList.add('hidden');
+      document.getElementById('quizCard').classList.remove('hidden');
+
+      document.getElementById('totalQNum').innerText = currentQuestions.length;
+
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      hasSubmittedCurrent = false;
+      const q = currentQuestions[currentIndex];
+
+      document.getElementById('questionCategory').innerText = q.cat;
+      document.getElementById('qTypeBadge').innerText = q.type.toUpperCase();
+      document.getElementById('questionText').innerText = q.q;
+      document.getElementById('currentQNum').innerText = currentIndex + 1;
+
+      const progressPct = Math.round(((currentIndex) / currentQuestions.length) * 100);
+      document.getElementById('progressBar').style.width = `${progressPct}%`;
+      document.getElementById('percentProgress').innerText = `${progressPct}%`;
+
+      document.getElementById('scoreText').innerText = `${score} / ${currentIndex}`;
+      document.getElementById('streakCount').innerText = streak;
+
+      const hintElem = document.getElementById('enumerationHint');
+      if (q.type === 'enumeration') {
+        hintElem.classList.remove('hidden');
+      } else {
+        hintElem.classList.add('hidden');
+      }
+
+      // Reset Inputs and UI
+      const input = document.getElementById('userAnswer');
+      input.value = '';
+      input.disabled = false;
+      input.className = "w-full px-4 py-3.5 sm:py-4 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 outline-none text-pink-900 font-semibold bg-white transition pr-12 text-base";
+      input.focus();
+
+      const feedback = document.getElementById('feedbackBox');
+      feedback.className = "hidden rounded-xl p-4 text-sm font-semibold transition";
+      feedback.innerHTML = '';
+
+      document.getElementById('submitBtn').classList.remove('hidden');
+      document.getElementById('nextBtn').classList.add('hidden');
+      document.getElementById('hintBtn').disabled = false;
+    }
+
+    function clearInput() {
+      if (!hasSubmittedCurrent) {
+        document.getElementById('userAnswer').value = '';
+        document.getElementById('userAnswer').focus();
+      }
+    }
+
+    // String Sanitizer for Flexible Checking
+    function sanitizeStr(str) {
+      return str
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '') // remove punctuation
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function handleAnswerSubmit(e) {
+      e.preventDefault();
+      if (hasSubmittedCurrent) return;
+
+      const userRaw = document.getElementById('userAnswer').value.trim();
+      if (!userRaw) return;
+
+      hasSubmittedCurrent = true;
+      const q = currentQuestions[currentIndex];
+      let isCorrect = false;
+
+      if (q.type === 'identification') {
+        const cleanUser = sanitizeStr(userRaw);
+        const cleanTarget = sanitizeStr(q.ans);
+
+        // Check exact match or high substring overlap
+        if (cleanUser === cleanTarget || (cleanTarget.length > 10 && cleanUser.includes(cleanTarget)) || (cleanUser.length > 8 && cleanTarget.includes(cleanUser))) {
+          isCorrect = true;
+        }
+      } else if (q.type === 'enumeration') {
+        // Splitting user answer by commas
+        const userList = userRaw.split(',').map(s => sanitizeStr(s)).filter(s => s.length > 0);
+        const targetList = q.ans.map(s => sanitizeStr(s));
+
+        // Count how many target items matched
+        let matches = 0;
+        targetList.forEach(target => {
+          const matchFound = userList.some(userItem => userItem === target || (target.length > 6 && userItem.includes(target)) || (userItem.length > 6 && target.includes(userItem)));
+          if (matchFound) matches++;
+        });
+
+        // Flexible grading: if > 70% matches, mark as correct!
+        if (matches === targetList.length || (targetList.length >= 4 && matches / targetList.length >= 0.7)) {
+          isCorrect = true;
+        }
+      }
+
+      displayFeedback(isCorrect, q);
+    }
+
+    function displayFeedback(isCorrect, q) {
+      const input = document.getElementById('userAnswer');
+      const feedback = document.getElementById('feedbackBox');
+      input.disabled = true;
+
+      if (isCorrect) {
+        score++;
+        streak++;
+        if (streak > maxStreak) maxStreak = streak;
+        playCorrectSound();
+
+        input.className = "w-full px-4 py-3.5 sm:py-4 rounded-xl border-2 border-emerald-400 bg-emerald-50 text-emerald-950 font-bold outline-none";
+        feedback.className = "rounded-xl p-4 text-sm font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300 block";
+        feedback.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-lg mr-2"></i> Correct! Excellent job.`;
+      } else {
+        streak = 0;
+        playIncorrectSound();
+
+        missedQuestions.push({
+          q: q.q,
+          user: input.value,
+          correct: Array.isArray(q.ans) ? q.ans.join("; ") : q.ans
+        });
+
+        input.className = "w-full px-4 py-3.5 sm:py-4 rounded-xl border-2 border-rose-400 bg-rose-50 text-rose-950 font-bold outline-none";
+        feedback.className = "rounded-xl p-4 text-sm font-semibold bg-rose-100 text-rose-900 border border-rose-300 block space-y-1";
+        
+        const correctFormatted = Array.isArray(q.ans) ? `<ul class="list-disc pl-5 mt-1">${q.ans.map(a => `<li>${a}</li>`).join('')}</ul>` : `<strong>${q.ans}</strong>`;
+        feedback.innerHTML = `<div><i class="fa-solid fa-circle-xmark text-rose-600 text-lg mr-2"></i> Incorrect or Incomplete.</div>
+                              <div class="mt-2 text-xs text-rose-800 uppercase tracking-wider font-bold">Exact Source Answer:</div>
+                              <div class="text-xs text-rose-950">${correctFormatted}</div>`;
+      }
+
+      document.getElementById('submitBtn').classList.add('hidden');
+      document.getElementById('nextBtn').classList.remove('hidden');
+      document.getElementById('scoreText').innerText = `${score} / ${currentIndex + 1}`;
+      document.getElementById('streakCount').innerText = streak;
+    }
+
+    function revealAnswer() {
+      if (hasSubmittedCurrent) return;
+      const q = currentQuestions[currentIndex];
+      const input = document.getElementById('userAnswer');
+      
+      if (Array.isArray(q.ans)) {
+        input.value = q.ans.join(", ");
+      } else {
+        input.value = q.ans;
+      }
+    }
+
+    function skipQuestion() {
+      if (!hasSubmittedCurrent) {
+        skipped++;
+        const q = currentQuestions[currentIndex];
+        missedQuestions.push({
+          q: q.q,
+          user: "[Skipped]",
+          correct: Array.isArray(q.ans) ? q.ans.join("; ") : q.ans
+        });
+        streak = 0;
+      }
+      nextQuestion();
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex < currentQuestions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quizCard').classList.add('hidden');
+      document.getElementById('resultCard').classList.remove('hidden');
+
+      const total = currentQuestions.length;
+      const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
+
+      document.getElementById('finalScore').innerText = `${score} / ${total}`;
+      document.getElementById('finalAccuracy').innerText = `${accuracy}%`;
+      document.getElementById('maxStreak').innerText = maxStreak;
+      document.getElementById('skippedCount').innerText = skipped;
+
+      const missedSec = document.getElementById('missedSection');
+      const missedList = document.getElementById('missedList');
+
+      if (missedQuestions.length > 0) {
+        missedSec.classList.remove('hidden');
+        missedList.innerHTML = missedQuestions.map((item, idx) => `
+          <div class="bg-white/90 p-3.5 rounded-xl border border-pink-200 text-xs">
+            <div class="font-bold text-pink-950 mb-1">#${idx + 1}. ${item.q}</div>
+            <div class="text-rose-600 font-semibold mb-1">Your Input: ${item.user || '(Empty)'}</div>
+            <div class="text-emerald-700 font-semibold">Source Answer: ${item.correct}</div>
+          </div>
+        `).join('');
+      } else {
+        missedSec.classList.add('hidden');
+      }
+    }
+
+    function resetQuiz() {
+      document.getElementById('quizCard').classList.add('hidden');
+      document.getElementById('resultCard').classList.add('hidden');
+      document.getElementById('startCard').classList.remove('hidden');
+      updateFilteredCount();
+    }
+
+    // Initial counter setup on page load
+    window.onload = function() {
+      updateFilteredCount();
+    };
+  </script>
+</body>
+</html>
